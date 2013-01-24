@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DragonFinder</title>
+    <meta id="viewport" name="viewport" content="user-scalable=no, width=device-width" />
+    <link href="styles.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="geo.js"></script>
+	<script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+	<script src="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.js"></script>
+	<script>
+	$(document).ready(function(){
+		 
+	$("#ChooseTrap").click(function(){
+		$("#trapp").text("Which Trap Would You Like to Use?");
+		$("#trapp2").text("Fire, Ice, Light, Shadow, etc.");
+		
+		});
+	$("#SetTrap").click(function(){
+		$("#results").text("The trap has been set.");
+		$("#results2").text("");
+		});
+	$("#Catch").click(function(){
+		$("#results").text("Prepare to Catch the Dragon!");
+		$("#results2").text("");
+		});
+	$("#Submit").click(function(){
+		var trap = document.getElementById('input').value;
+		localStorage.setItem('Trap', trap);
+		$("#trapp").text("Trap Selected: " + trap);
+		$("#trapp2").text("");
+		$("#results").text("");
+		$("#results2").text("");
+		});
+	});
+	
+	//database creation
+   	var storage = {},
+    myData = null,
+    dbName = 'mydatabase',
+    dbVersion = '1.0',
+    dbDescription = 'app data store',
+    dbSize = 20 * 1024 * 1024;
+ 
+  
+   	function initDatabase () {
+   	    
+   	    try {
+   	        var data = '';
+   	                        
+   	        storage.db = openDatabase(dbName, dbVersion, dbDescription, dbSize);
+   	        storage.db.transaction(function (tx) {
+   	                    
+   	            tx.executeSql("CREATE TABLE IF NOT EXISTS appdata (id unique, text)");
+   	                        
+   	        }, handleDbError);
+   	                    
+   	        storage.db.transaction(function (tx) {
+   	                    
+   	            tx.executeSql("INSERT OR IGNORE INTO appdata (id, text) VALUES(?,?)", [dbName, data]);
+   	                    
+   	        }, handleDbError);
+   	                                    
+   	        } catch(e) {
+   	            handleDbError(e);
+   	    }
+   	}
+
+   	initDatabase();
+   	
+   	function getData () {
+        
+   	    var myRequest = new XMLHttpRequest();
+
+   	    myRequest.onreadystatechange = function () {    
+
+   	        if (myRequest.readyState === 4 && myRequest.status === 200) {
+   	            myData = JSON.parse(myRequest.responseText);
+   	            updateDatabase();
+   	            startApp();          
+   	        }
+   	    };
+
+   	    myRequest.open('GET', 'http://www.imfit.com/db', true);
+   	    myRequest.send();
+   	}
+
+   	function updateDatabase () {
+   	    
+   	    try { 
+   	        var data = JSON.stringify(myData);
+   	                        
+   	        storage.db = openDatabase(dbName, dbVersion, dbDescription, dbSize);       
+   	        storage.db.transaction(function (tx) {
+   	                    
+   	            tx.executeSql("UPDATE appdata SET text=? WHERE id=?", [data, dbName]);
+   	                    
+   	        }, handleDbError);
+   	                                    
+   	        } catch(e) {             
+   	            handleDbError(e);
+   	    }
+   	}
+   	
+   	function throwReadError (e) {
+   	    
+   	    console.log(e.message);
+   	    console.log(e.code);
+   	            
+   	    if(!myData) {
+   	        showAlert("This app requires an internet connection for first launch");
+   	    }
+   	}
+   	        
+   	function readFromDatabase () {
+   	                
+   	    storage.db = openDatabase(dbName, dbVersion, dbDescription, dbSize);
+   	    storage.db.transaction(function (tx) {
+   	                
+   	        tx.executeSql('SELECT * FROM appdata', [], function (tx, results) {
+   	                
+   	            myData = JSON.parse(results.rows.item(0).text);
+   	            startApp();
+   	        });
+
+   	    }, throwReadError);
+	}
+	
+	</script>
+</head>
+ 
+<body>
+    <div id="container">
+        <div id="images">
+            <img src="images/FireDragon.jpg" width="200" height="200" alt="Eldargoth" id="fire" />
+            <img src="images/IceDragon.jpg" width="200" height="200" alt="Karnaus" id="ice" /><br />
+            <img src="images/ShadowDragon.jpg" width="200" height="200" alt="Marfaun" id="shadow" />
+            <img src="images/GoldenDragon.jpg" width="200" height="200" alt="Estaron" id="golden" /><br />
+            <img src="images/FrostDragon.jpg" width="200" height="200" alt="Liminthus" id="frost" />
+            <img src="images/HappyDragon.jpg" width="200" height="200" alt="Nadafeer"  id="happy" /><br />
+        </div>
+        <div id="button" align="right">
+            <h1 class="white">Dragon Hunter</h1>
+			<button type="button" id="btnGPSDefault" onClick="getPosition('')">Search</button>
+			<button type="button" id="ChooseTrap">Choose Trap</button>
+			<h3 id="trapp" class="white"></h3>
+			<h3 id="trapp2" class="white"></h3>
+			<input type="text" id="input" value="Fire">
+			<button type="submit" id="Submit" name="Submit">Sumbit</button>
+			<button type="button" id="SetTrap">Set Trap</button>
+			<button type="button" id="Catch">Catch</button>
+			<h3 id="results" class="white"></h3>
+			<h3 id="results2" class="white"></h3>
+			<div id="geolocationInfo" class="white">
+				
+			</div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget xmlns="http://www.w3.org/ns/widgets"
+        xmlns:rim="http://www.blackberry.com/ns/widgets"
+        version="1.0.0.0" id="HelloWorldApp">  
+    <name>Dragon Finder</name>
+    <author>Ian Cook</author>
+    <description>Finds Dragons Near You</description>
+    <icon src="images/icon.png"/>
+    <content src="index.html"/>
+    <rim:permissions>  
+        <rim:permit>read_geolocation</rim:permit>
+    </rim:permissions>
+</widget>
